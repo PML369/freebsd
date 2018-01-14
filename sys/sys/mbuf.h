@@ -1105,6 +1105,7 @@ extern int		nmbclusters;	/* Maximum number of clusters */
 #define	PACKET_TAG_ND_OUTGOING			30 /* ND outgoing */
 
 /* Specific cookies and tags. */
+#define MTAG_COOKIE_NET_UUID			1  /* cookie for net_uuid tags*/
 
 /* Packet tag routines. */
 struct m_tag	*m_tag_alloc(u_int32_t, int, int, int);
