@@ -84,6 +84,7 @@ __FBSDID("$FreeBSD$");
 #include <netinet/sctp.h>
 #include <netinet/sctp_crc32.h>
 #endif
+#include <netinet/net_uuid.h>
 
 #include <netipsec/ipsec_support.h>
 
@@ -239,6 +240,8 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 			M_HASHTYPE_SET(m, inp->inp_flowtype);
 		}
 	}
+	// Add CADETS UUID to the packet to track it through the stack
+	net_uuid_tag_packet(m);
 
 	if (ro == NULL) {
 		ro = &iproute;
