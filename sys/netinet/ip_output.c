@@ -58,6 +58,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/socketvar.h>
 #include <sys/sysctl.h>
 #include <sys/ucred.h>
+#include <sys/uuid.h>
 
 #include <net/if.h>
 #include <net/if_var.h>
@@ -226,10 +227,16 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 	struct rtentry *rte;	/* cache for ro->ro_rt */
 	uint32_t fibnum;
 	int have_ia_ref;
+	struct uuid uuid;
+	struct uuid namespace;
 #if defined(IPSEC) || defined(IPSEC_SUPPORT)
 	int no_route_but_check_spd = 0;
 #endif
 	M_ASSERTPKTHDR(m);
+
+	kern_uuidgen(&uuid, 1);
+	uuid_generate_nil(&namespace);
+	uuid_generate_version5(&uuid, &namespace, "123456789abc", 12);
 
 	if (inp != NULL) {
 		INP_LOCK_ASSERT(inp);
