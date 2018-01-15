@@ -162,3 +162,37 @@ net_uuid_tag_packet(struct mbuf *packet)
 	net_uuid_generate(&tag->uuid);
 	m_tag_prepend(packet, &tag->tag);
 }
+
+void
+net_uuid_tag_child_packet(struct mbuf *parent, struct mbuf *child)
+{
+	struct mtag_uuid *parent_tag, *child_tag;
+
+	// Find the uuid tag of the parent
+	parent_tag = (struct mtag_uuid *)m_tag_locate(
+			parent,
+			MTAG_COOKIE_NET_UUID,
+			TAG_TYPE_UUID_STAMP,
+			NULL);
+
+	// ip_fragment turns the parent packet into the first child,
+	// so we cannot assume that child is a fresh mbuf with no uuid tag
+	child_tag = (struct mtag_uuid *)m_tag_locate(
+			child,
+			MTAG_COOKIE_NET_UUID,
+			TAG_TYPE_UUID_STAMP,
+			NULL);
+	if (child_tag != NULL) {
+		m_tag_unlink(child, &child_tag->tag);
+		if (child_tag != parent_tag) {
+			m_tag_free(&child_tag->tag);
+		}
+	}
+
+	// Allocate new child tag
+	child_tag = net_uuid_construct_stamp_tag();
+	net_uuid_generate(&child_tag->uuid);
+	m_tag_prepend(child, &child_tag->tag);
+
+	child_tag->parent = net_uuid_tag_deep_copy(parent_tag);
+}
