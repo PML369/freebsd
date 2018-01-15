@@ -60,6 +60,17 @@ net_uuid_generate(struct uuid *uuid)
 	kern_uuidgen(uuid, 1);
 }
 
+static void
+net_uuid_copy(struct uuid *from, struct uuid *to)
+{
+	if (to == NULL)
+		return;
+	if (from != NULL)
+		memcpy(to, from, sizeof(struct uuid));
+	else
+		uuid_generate_nil(to);
+}
+
 static inline struct mtag_uuid *
 net_uuid_alloc_stamp_tag()
 {
@@ -126,6 +137,20 @@ net_uuid_construct_stamp_tag()
 	tag->m_free_tag_default = tag->tag.m_tag_free;
 	tag->tag.m_tag_free = &net_uuid_free_stamp_tag;
 	return tag;
+}
+
+static struct mtag_uuid *
+net_uuid_tag_deep_copy(struct mtag_uuid *tag)
+{
+	struct mtag_uuid *copy = net_uuid_construct_stamp_tag();
+	net_uuid_copy(&tag->uuid, &copy->uuid);
+	if (tag->parent != NULL)
+		copy->parent = net_uuid_tag_deep_copy(tag->parent);
+	if (tag->child != NULL)
+		copy->child = net_uuid_tag_deep_copy(tag->child);
+	if (tag->sibling != NULL)
+		copy->sibling = net_uuid_tag_deep_copy(tag->sibling);
+	return copy;
 }
 
 void
