@@ -48,13 +48,13 @@ __FBSDID("$FreeBSD$");
 
 #include <net/rss_config.h>
 #include <net/netisr.h>
+#include <net/net_uuid.h>
 #include <net/vnet.h>
 
 #include <netinet/in.h>
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/in_rss.h>
-#include <netinet/net_uuid.h>
 #ifdef MAC
 #include <security/mac/mac_framework.h>
 #endif

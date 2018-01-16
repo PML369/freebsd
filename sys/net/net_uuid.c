@@ -43,7 +43,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/syslog.h> // Logging to dmesg
 #include <sys/systm.h> // "
 
-#include <netinet/net_uuid.h>
+#include <net/net_uuid.h>
 
 // Tag type definitions are private to the implementation
 #define TAG_TYPE_UUID_STAMP	(1 | MTAG_PERSISTENT)

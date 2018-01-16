@@ -30,8 +30,8 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#ifndef _NETINET_NET_UUID_H_
-#define _NETINET_NET_UUID_H_
+#ifndef _SYS_NET_UUID_H_
+#define _SYS_NET_UUID_H_
 
 // Short name used for malloc on list entries, 
 // exposed to userspace to allow tracing
@@ -58,4 +58,4 @@ void	net_uuid_tag_child_packet(struct mbuf *, struct mbuf *);
 void	net_uuid_tag_assembled_packet(struct mbuf *, struct mbuf *);
 
 #endif /* _KERNEL */
-#endif /* _NETINET_NET_UUID_H_ */
+#endif /* _SYS_NET_UUID_H_ */

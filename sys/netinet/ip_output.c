@@ -63,6 +63,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if_var.h>
 #include <net/if_llatbl.h>
 #include <net/netisr.h>
+#include <net/net_uuid.h>
 #include <net/pfil.h>
 #include <net/route.h>
 #ifdef RADIX_MPATH
@@ -84,7 +85,6 @@ __FBSDID("$FreeBSD$");
 #include <netinet/sctp.h>
 #include <netinet/sctp_crc32.h>
 #endif
-#include <netinet/net_uuid.h>
 
 #include <netipsec/ipsec_support.h>
 

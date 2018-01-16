@@ -4081,6 +4081,7 @@ net/mp_ring.c			optional ether
 net/mppcc.c			optional netgraph_mppc_compression
 net/mppcd.c			optional netgraph_mppc_compression
 net/netisr.c			standard
+net/net_uuid.c			standard
 net/pfil.c			optional ether | inet
 net/radix.c			standard
 net/radix_mpath.c		standard
@@ -4252,7 +4253,6 @@ netinet/ip_options.c		optional inet
 netinet/ip_output.c		optional inet
 netinet/ip_reass.c		optional inet
 netinet/raw_ip.c		optional inet | inet6
-netinet/net_uuid.c		optional inet
 netinet/cc/cc.c			optional inet | inet6
 netinet/cc/cc_newreno.c		optional inet | inet6
 netinet/sctp_asconf.c		optional inet sctp | inet6 sctp
