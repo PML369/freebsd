@@ -153,6 +153,16 @@ net_uuid_tag_deep_copy(struct mtag_uuid *tag)
 	return copy;
 }
 
+static inline struct mtag_uuid *
+net_uuid_tag_locate(struct mbuf *mbuf)
+{
+	return (struct mtag_uuid *)m_tag_locate(
+			mbuf,
+			MTAG_COOKIE_NET_UUID,
+			TAG_TYPE_UUID_STAMP,
+			NULL);
+}
+
 struct mtag_uuid *
 net_uuid_tag_packet(struct mbuf *packet)
 {
@@ -171,19 +181,11 @@ net_uuid_tag_child_packet(struct mbuf *parent, struct mbuf *child)
 	struct mtag_uuid *parent_tag, *child_tag;
 
 	// Find the uuid tag of the parent
-	parent_tag = (struct mtag_uuid *)m_tag_locate(
-			parent,
-			MTAG_COOKIE_NET_UUID,
-			TAG_TYPE_UUID_STAMP,
-			NULL);
+	parent_tag = net_uuid_tag_locate(parent);
 
 	// ip_fragment turns the parent packet into the first child,
 	// so we cannot assume that child is a fresh mbuf with no uuid tag
-	child_tag = (struct mtag_uuid *)m_tag_locate(
-			child,
-			MTAG_COOKIE_NET_UUID,
-			TAG_TYPE_UUID_STAMP,
-			NULL);
+	child_tag = net_uuid_tag_locate(child);
 	if (child_tag != NULL) {
 		m_tag_unlink(child, &child_tag->tag);
 		if (child_tag != parent_tag) {
@@ -205,17 +207,8 @@ net_uuid_tag_assembled_packet(struct mbuf *assembled, struct mbuf *constituent)
 	struct mtag_uuid *constituent_tag, *assembled_tag;
 
 	// Find tags on constituent and assembled
-	constituent_tag = (struct mtag_uuid *)m_tag_locate(
-			constituent,
-			MTAG_COOKIE_NET_UUID,
-			TAG_TYPE_UUID_STAMP,
-			NULL);
-
-	assembled_tag = (struct mtag_uuid *)m_tag_locate(
-			assembled,
-			MTAG_COOKIE_NET_UUID,
-			TAG_TYPE_UUID_STAMP,
-			NULL);
+	constituent_tag = net_uuid_tag_locate(constituent);
+	assembled_tag = net_uuid_tag_locate(assembled);
 
 	if (assembled_tag == constituent_tag) {
 		// Retag parent
