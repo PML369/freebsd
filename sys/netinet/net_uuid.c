@@ -98,6 +98,7 @@ net_uuid_free_stamp_tag(struct m_tag *tag)
 	// Put the input tag in the queue
 	entry = malloc(sizeof(struct freeq_entry), 
 			M_NET_UUID_LIST_ENTRY, M_NOWAIT);
+	entry->tag = (struct mtag_uuid *)tag;
 	STAILQ_INSERT_HEAD(&head, entry, entries);
 
 	while (!STAILQ_EMPTY(&head)) {
