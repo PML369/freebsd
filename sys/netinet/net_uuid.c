@@ -40,6 +40,8 @@ __FBSDID("$FreeBSD$");
 #include <sys/malloc.h>
 #include <sys/mbuf.h>
 #include <sys/queue.h>
+#include <sys/syslog.h> // Logging to dmesg
+#include <sys/systm.h> // "
 
 #include <netinet/net_uuid.h>
 
@@ -52,6 +54,9 @@ static MALLOC_DEFINE(M_NET_UUID_LIST_ENTRY, MTAG_UUID_LIST_ENTRY_MEM_NAME,
 
 #define TAG_UUID_ALLOC_LEN	(sizeof(struct mtag_uuid) \
 	       		       - sizeof(struct m_tag))
+
+#define LOG_NAME "net_uuid: "
+#define LOG
 
 static void
 net_uuid_generate(struct uuid *uuid)
@@ -84,6 +89,9 @@ net_uuid_alloc_stamp_tag()
 static void
 net_uuid_free_stamp_tag(struct m_tag *tag)
 {
+#ifdef LOG
+	log(LOG_DEBUG, LOG_NAME "Freeing tag at address %p\n", tag);
+#endif
 	// We're going to BFS for all sub-tags to free, so set up a FIFO
 	STAILQ_HEAD(freeq_head, freeq_entry) head = 
 		STAILQ_HEAD_INITIALIZER(head);
@@ -107,6 +115,9 @@ net_uuid_free_stamp_tag(struct m_tag *tag)
 
 		// Add any sub-tags to the queue
 		struct mtag_uuid *tag = entry->tag;
+#ifdef LOG
+		log(LOG_DEBUG, LOG_NAME "Pulled %p out of the queue\n", tag);
+#endif
 		//struct m_tag *t = (struct m_tag *)tag;
 		struct mtag_uuid *branches[] = 
 				{ tag->parent, tag->child, tag->sibling };
@@ -117,6 +128,10 @@ net_uuid_free_stamp_tag(struct m_tag *tag)
 						M_NET_UUID_LIST_ENTRY,
 						M_NOWAIT);
 				branch->tag = branches[i];
+#ifdef LOG
+				log(LOG_DEBUG, LOG_NAME "Enqueueing %p\n",
+						branches[i]);
+#endif
 				STAILQ_INSERT_TAIL(&head, branch, entries);
 			}
 		}
@@ -126,6 +141,9 @@ net_uuid_free_stamp_tag(struct m_tag *tag)
 		tag->m_free_tag_default(&tag->tag);
 		free(entry, M_NET_UUID_LIST_ENTRY);
 	}
+#ifdef LOG
+	log(LOG_DEBUG, LOG_NAME "Done freeing %p\n", tag);
+#endif
 }
 
 static struct mtag_uuid *
