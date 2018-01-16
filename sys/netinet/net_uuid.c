@@ -153,7 +153,7 @@ net_uuid_tag_deep_copy(struct mtag_uuid *tag)
 	return copy;
 }
 
-void
+struct mtag_uuid *
 net_uuid_tag_packet(struct mbuf *packet)
 {
 	struct mtag_uuid *tag;
@@ -161,6 +161,8 @@ net_uuid_tag_packet(struct mbuf *packet)
 	tag = net_uuid_construct_stamp_tag();
 	net_uuid_generate(&tag->uuid);
 	m_tag_prepend(packet, &tag->tag);
+
+	return tag;
 }
 
 void
@@ -195,4 +197,35 @@ net_uuid_tag_child_packet(struct mbuf *parent, struct mbuf *child)
 	m_tag_prepend(child, &child_tag->tag);
 
 	child_tag->parent = net_uuid_tag_deep_copy(parent_tag);
+}
+
+void
+net_uuid_tag_assembled_packet(struct mbuf *assembled, struct mbuf *constituent)
+{
+	struct mtag_uuid *constituent_tag, *assembled_tag;
+
+	// Find tags on constituent and assembled
+	constituent_tag = (struct mtag_uuid *)m_tag_locate(
+			constituent,
+			MTAG_COOKIE_NET_UUID,
+			TAG_TYPE_UUID_STAMP,
+			NULL);
+
+	assembled_tag = (struct mtag_uuid *)m_tag_locate(
+			assembled,
+			MTAG_COOKIE_NET_UUID,
+			TAG_TYPE_UUID_STAMP,
+			NULL);
+
+	if (assembled_tag == constituent_tag) {
+		// Retag parent
+		m_tag_unlink(assembled, &assembled_tag->tag);
+		assembled_tag = NULL;
+	}
+	if (assembled_tag == NULL) {
+		assembled_tag = net_uuid_tag_packet(assembled);
+	}
+
+	constituent_tag->sibling = assembled_tag->child;
+	assembled_tag->child = constituent_tag;
 }
