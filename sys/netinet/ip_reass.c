@@ -54,6 +54,7 @@ __FBSDID("$FreeBSD$");
 #include <netinet/ip.h>
 #include <netinet/ip_var.h>
 #include <netinet/in_rss.h>
+#include <netinet/net_uuid.h>
 #ifdef MAC
 #include <security/mac/mac_framework.h>
 #endif
@@ -370,6 +371,7 @@ ip_reass(struct mbuf *m)
 	t = m->m_next;
 	m->m_next = NULL;
 	m_cat(m, t);
+	net_uuid_tag_assembled_packet(m, m);
 	nq = q->m_nextpkt;
 	q->m_nextpkt = NULL;
 	for (q = nq; q != NULL; q = nq) {
@@ -378,6 +380,7 @@ ip_reass(struct mbuf *m)
 		m->m_pkthdr.csum_flags &= q->m_pkthdr.csum_flags;
 		m->m_pkthdr.csum_data += q->m_pkthdr.csum_data;
 		m_cat(m, q);
+		net_uuid_tag_assembled_packet(m, q);
 	}
 	/*
 	 * In order to do checksumming faster we do 'end-around carry' here

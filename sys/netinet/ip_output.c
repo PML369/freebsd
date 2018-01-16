@@ -232,6 +232,9 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 #endif
 	M_ASSERTPKTHDR(m);
 
+	// Add CADETS UUID to the packet to track it through the stack
+	net_uuid_tag_packet(m);
+
 	if (inp != NULL) {
 		INP_LOCK_ASSERT(inp);
 		M_SETFIB(m, inp->inp_inc.inc_fibnum);
@@ -240,8 +243,6 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 			M_HASHTYPE_SET(m, inp->inp_flowtype);
 		}
 	}
-	// Add CADETS UUID to the packet to track it through the stack
-	net_uuid_tag_packet(m);
 
 	if (ro == NULL) {
 		ro = &iproute;
@@ -900,6 +901,7 @@ smart_frag_failure:
 #ifdef MAC
 		mac_netinet_fragment(m0, m);
 #endif
+		net_uuid_tag_child_packet(m0, m);
 		mhip->ip_off = htons(mhip->ip_off);
 		mhip->ip_sum = 0;
 		if (m->m_pkthdr.csum_flags & CSUM_IP & ~if_hwassist_flags) {
