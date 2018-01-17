@@ -182,6 +182,21 @@ net_uuid_tag_locate(struct mbuf *mbuf)
 			NULL);
 }
 
+char *
+net_uuid_get_uuid_str(struct mbuf *mbuf)
+{
+	char *buf = malloc(38, M_TEMP, M_NOWAIT);
+	struct mtag_uuid *tag = net_uuid_tag_locate(mbuf);
+	if (tag != NULL) {
+		snprintf_uuid(buf, 38, &tag->uuid);
+	} else {
+		struct uuid n;
+		uuid_generate_nil(&n);
+		snprintf_uuid(buf, 38, &n);
+	}
+	return buf;
+}
+
 struct mtag_uuid *
 net_uuid_tag_packet(struct mbuf *packet)
 {
