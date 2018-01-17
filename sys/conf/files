@@ -4082,6 +4082,7 @@ net/mppcc.c			optional netgraph_mppc_compression
 net/mppcd.c			optional netgraph_mppc_compression
 net/netisr.c			standard
 net/net_uuid.c			standard
+net/net_uuid_kdtrace.c		standard
 net/pfil.c			optional ether | inet
 net/radix.c			standard
 net/radix_mpath.c		standard
