@@ -27,9 +27,11 @@
  * $FreeBSD$
  */
 
+#include "opt_no_net_uuid_tracing.h"
 #include <sys/param.h>
 #include <net/net_uuid_kdtrace.h>
 
+#ifndef NO_NET_UUID_TRACING
 
 SDT_PROVIDER_DEFINE(net_uuid);
 
@@ -40,3 +42,4 @@ SDT_PROBE_DEFINE1(net_uuid, packet, ,	trace__stop,	"char *");
 SDT_PROBE_DEFINE2(net_uuid, packet, ,	fragment,	"char *", "char *");
 SDT_PROBE_DEFINE1(net_uuid, packet, ,	drop,		"char *");
 
+#endif // NO_NET_UUID_TRACING

@@ -30,11 +30,22 @@
 #ifndef _SYS_NET_UUID_KDTRACE_H_
 #define	_SYS_NET_UUID_KDTRACE_H_
 
+#include "opt_no_net_uuid_tracing.h"
 #include <net/net_uuid.h>
 #include <sys/malloc.h>
 #include <sys/queue.h>
 #include <sys/param.h>
 #include <sys/sdt.h>
+
+#ifdef NO_NET_UUID_TRACING
+// Define macros as empty
+
+#define NET_UUID_PROBE_STR(mod, probe, t0, mt0)
+#define NET_UUID_PROBE_STR_W_PTR(mod, probe, t0, mt0)
+#define NET_UUID_PROBE2_STR(mod, probe, t0, mt0, arg1)
+#define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)
+
+#else // NO_NET_UUID_TRACING
 
 #define NET_UUID_PROBE_STR(mod, probe, t0, mt0)			do {	\
 	char *str = net_uuid_get_uuid_str(t0, mt0);			\
@@ -72,4 +83,5 @@ SDT_PROBE_DECLARE(net_uuid, packet, ,	fragment);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	destroy);
 
 
+#endif // NO_NET_UUID_TRACING
 #endif // _SYS_NET_UUID_KDTRACE_H_

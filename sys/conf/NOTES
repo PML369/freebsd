@@ -634,6 +634,10 @@ options 	IPSEC			#IP security (requires device crypto)
 options		IPSEC_SUPPORT
 #options 	IPSEC_DEBUG		#debug for IP security
 
+# Disable UUID tagging of packets and remove DTrace tracepoints which would
+# use the tags. This should increase performance of the network stack.
+#!options 	NO_NET_UUID_TRACING
+
 #
 # SMB/CIFS requester
 # NETSMB enables support for SMB protocol, it requires LIBMCHAIN and LIBICONV

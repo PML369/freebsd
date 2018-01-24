@@ -31,6 +31,8 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Config option which disables tagging & tracing
+#include "opt_no_net_uuid_tracing.h"
 #include <sys/cdefs.h>
 __FBSDID("$FreeBSD$");
 
@@ -57,6 +59,27 @@ static MALLOC_DEFINE(M_NET_UUID_LIST_ENTRY, MTAG_UUID_LIST_ENTRY_MEM_NAME,
 
 #define LOG_NAME "net_uuid: "
 #define LOG
+
+#ifdef NO_NET_UUID_TRACING
+// Replace all non-static functions with stubs
+
+struct mtag_uuid *
+net_uuid_tag_packet(struct mbuf *a)
+	{ return NULL; }
+struct mtag_uuid *
+net_uuid_tag_child_packet(struct mbuf *a, struct mbuf *b)
+	{ return NULL; }
+void
+net_uuid_tag_assembled_packet(struct mbuf *a, struct mbuf *b) { }
+
+char *
+net_uuid_get_uuid_str(char a, void *b) { return NULL; }
+char *
+net_uuid_get_uuid_str_mbuf(struct mbuf *a) { return NULL; }
+char *
+net_uuid_get_uuid_str_tag(struct mtag_uuid *a) { return NULL; }
+
+#else // NO_NET_UUID_TRACING
 
 static void
 net_uuid_generate(struct uuid *uuid)
@@ -276,3 +299,5 @@ net_uuid_tag_assembled_packet(struct mbuf *assembled, struct mbuf *constituent)
 	constituent_tag->sibling = assembled_tag->child;
 	assembled_tag->child = constituent_tag;
 }
+
+#endif // NO_NET_UUID_TRACING
