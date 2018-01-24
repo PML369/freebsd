@@ -183,10 +183,29 @@ net_uuid_tag_locate(struct mbuf *mbuf)
 }
 
 char *
-net_uuid_get_uuid_str(struct mbuf *mbuf)
+net_uuid_get_uuid_str(char type, void *structure)
+{
+	switch (type) {
+		case 'T':
+			return net_uuid_get_uuid_str_tag(
+					(struct mtag_uuid *)structure);
+		case 'M':
+			return net_uuid_get_uuid_str_mbuf(
+					(struct mbuf *)structure);
+		default:
+			return net_uuid_get_uuid_str_tag(NULL);
+	}
+}
+char *
+net_uuid_get_uuid_str_mbuf(struct mbuf *mbuf)
+{
+	struct mtag_uuid *tag = net_uuid_tag_locate(mbuf);
+	return net_uuid_get_uuid_str_tag(tag);
+}
+char *
+net_uuid_get_uuid_str_tag(struct mtag_uuid *tag)
 {
 	char *buf = malloc(38, M_TEMP, M_NOWAIT);
-	struct mtag_uuid *tag = net_uuid_tag_locate(mbuf);
 	if (tag != NULL) {
 		snprintf_uuid(buf, 38, &tag->uuid);
 	} else {
@@ -209,13 +228,16 @@ net_uuid_tag_packet(struct mbuf *packet)
 	return tag;
 }
 
-void
+struct mtag_uuid *
 net_uuid_tag_child_packet(struct mbuf *parent, struct mbuf *child)
 {
 	struct mtag_uuid *parent_tag, *child_tag;
 
 	// Find the uuid tag of the parent
 	parent_tag = net_uuid_tag_locate(parent);
+	if (parent_tag == NULL) {
+		parent_tag = net_uuid_tag_packet(parent);
+	}
 
 	// ip_fragment turns the parent packet into the first child,
 	// so we cannot assume that child is a fresh mbuf with no uuid tag
@@ -228,11 +250,9 @@ net_uuid_tag_child_packet(struct mbuf *parent, struct mbuf *child)
 	}
 
 	// Allocate new child tag
-	child_tag = net_uuid_construct_stamp_tag();
-	net_uuid_generate(&child_tag->uuid);
-	m_tag_prepend(child, &child_tag->tag);
-
+	child_tag = net_uuid_tag_packet(child);
 	child_tag->parent = net_uuid_tag_deep_copy(parent_tag);
+	return parent_tag;
 }
 
 void

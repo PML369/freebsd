@@ -36,22 +36,30 @@
 #include <sys/param.h>
 #include <sys/sdt.h>
 
-#define NET_UUID_PROBE(mod, probe, mbuf)			do {	\
-	char *str = net_uuid_get_uuid_str(mbuf);			\
+#define NET_UUID_PROBE_STR(mod, probe, t0, mt0)			do {	\
+	char *str = net_uuid_get_uuid_str(t0, mt0);			\
 	SDT_PROBE1(net_uuid, mod, , probe, str);			\
 	free(str, M_TEMP);						\
 } while (0)
 
-#define NET_UUID_PROBE_W_PTR(mod, probe, mbuf)			do {	\
-	char *str = net_uuid_get_uuid_str(mbuf);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str, mbuf);			\
+#define NET_UUID_PROBE_STR_W_PTR(mod, probe, t0, mt0)		do {	\
+	char *str = net_uuid_get_uuid_str(t0, mt0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, str, mt0);			\
 	free(str, M_TEMP);						\
 } while (0)
 
-#define NET_UUID_PROBE2(mod, probe, mbuf, arg1)			do {	\
-	char *str = net_uuid_get_uuid_str(mbuf);			\
+#define NET_UUID_PROBE2_STR(mod, probe, t0, mt0, arg1)		do {	\
+	char *str = net_uuid_get_uuid_str(t0, mt0);			\
 	SDT_PROBE2(net_uuid, mod, , probe, str, arg1);			\
 	free(str, M_TEMP);						\
+} while (0)
+
+#define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)	do {	\
+	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
+	char *str1 = net_uuid_get_uuid_str(t1, mt1);			\
+	SDT_PROBE2(net_uuid, mod, , probe, str0, str1);			\
+	free(str0, M_TEMP);						\
+	free(str1, M_TEMP);						\
 } while (0)
 
 SDT_PROVIDER_DECLARE(net_uuid);
