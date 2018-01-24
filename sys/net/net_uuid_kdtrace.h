@@ -41,7 +41,7 @@
 // Define macros as empty
 
 #define NET_UUID_PROBE_STR(mod, probe, t0, mt0)
-#define NET_UUID_PROBE_STR_W_PTR(mod, probe, t0, mt0)
+#define NET_UUID_PROBE_STR_W_ADDRS(mod, probe, t0, mt0)
 #define NET_UUID_PROBE2_STR(mod, probe, t0, mt0, arg1)
 #define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)
 
@@ -53,9 +53,15 @@
 	free(str, M_TEMP);						\
 } while (0)
 
-#define NET_UUID_PROBE_STR_W_PTR(mod, probe, t0, mt0)		do {	\
+#define NET_UUID_PROBE_STR_W_ADDRS(mod, probe, t0, mt0)		do {	\
 	char *str = net_uuid_get_uuid_str(t0, mt0);			\
 	SDT_PROBE2(net_uuid, mod, , probe, str, mt0);			\
+	free(str, M_TEMP);						\
+} while (0)
+
+#define NET_UUID_PROBE2_STR_ADDRS(mod, probe, t0, mt0, m1)	do {	\
+	char *str = net_uuid_get_uuid_str(t0, mt0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, str, m1);			\
 	free(str, M_TEMP);						\
 } while (0)
 
@@ -80,8 +86,9 @@ SDT_PROBE_DECLARE(net_uuid, mem, ,	alloc);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	trace__start);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	trace__stop);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	fragment);
-SDT_PROBE_DECLARE(net_uuid, packet, ,	destroy);
+SDT_PROBE_DECLARE(net_uuid, packet, ,	drop);
 
+SDT_PROBE_DECLARE(net_uuid, packet, ,	to__subsys);
 
 #endif // NO_NET_UUID_TRACING
 #endif // _SYS_NET_UUID_KDTRACE_H_

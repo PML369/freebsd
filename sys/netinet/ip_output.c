@@ -235,7 +235,7 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 
 	// Add CADETS UUID to the packet to track it through the stack
 	net_uuid_tag_packet(m);
-	NET_UUID_PROBE_STR_W_PTR(mem, alloc, 'M',m);
+	NET_UUID_PROBE_STR_W_ADDRS(mem, alloc, 'M',m);
 
 	if (inp != NULL) {
 		INP_LOCK_ASSERT(inp);

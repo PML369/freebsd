@@ -42,4 +42,6 @@ SDT_PROBE_DEFINE1(net_uuid, packet, ,	trace__stop,	"char *");
 SDT_PROBE_DEFINE2(net_uuid, packet, ,	fragment,	"char *", "char *");
 SDT_PROBE_DEFINE1(net_uuid, packet, ,	drop,		"char *");
 
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__subsys,	"char *", "char *");
+
 #endif // NO_NET_UUID_TRACING
