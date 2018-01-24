@@ -1421,15 +1421,19 @@ static void
 ip_mloopback(struct ifnet *ifp, const struct mbuf *m, int hlen)
 {
 	struct ip *ip;
-	struct mbuf *copym;
+	struct mbuf *copym, *firstcopym;
 
 	/*
 	 * Make a deep copy of the packet because we're going to
 	 * modify the pack in order to generate checksums.
 	 */
 	copym = m_dup(m, M_NOWAIT);
-	if (copym != NULL && (!M_WRITABLE(copym) || copym->m_len < hlen))
+	firstcopym = copym;
+	NET_UUID_PROBE_STR_W_ADDRS(mem, alloc, 'M',copym);
+	if (copym != NULL && (!M_WRITABLE(copym) || copym->m_len < hlen)) {
 		copym = m_pullup(copym, hlen);
+		NET_UUID_PROBE2_STR_ADDRS(mem, alloc, 'M',firstcopym, copym);
+	}
 	if (copym != NULL) {
 		/* If needed, compute the checksum and mark it as valid. */
 		if (copym->m_pkthdr.csum_flags & CSUM_DELAY_DATA) {

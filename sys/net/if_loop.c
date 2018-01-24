@@ -56,6 +56,7 @@
 #include <net/if_clone.h>
 #include <net/if_types.h>
 #include <net/netisr.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/bpf.h>
 #include <net/vnet.h>
@@ -307,6 +308,7 @@ if_simloop(struct ifnet *ifp, struct mbuf *m, int af, int hlen)
 	 */
 	if (hlen > 0) {
 		if (bpf_peers_present(ifp->if_bpf)) {
+			NET_UUID_PROBE2_STR(packet, to__subsys, 'M',m, "BPF");
 			bpf_mtap(ifp->if_bpf, m);
 		}
 	} else {
@@ -318,6 +320,8 @@ if_simloop(struct ifnet *ifp, struct mbuf *m, int af, int hlen)
 				/*
 				 * We need to prepend the address family.
 				 */
+				NET_UUID_PROBE2_STR(packet, to__subsys, 
+						'M',m, "BPF");
 				bpf_mtap2(V_loif->if_bpf, &af1, sizeof(af1), m);
 			}
 		}
@@ -357,6 +361,7 @@ if_simloop(struct ifnet *ifp, struct mbuf *m, int af, int hlen)
 #endif
 	default:
 		printf("if_simloop: can't handle af=%d\n", af);
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return (EAFNOSUPPORT);
 	}

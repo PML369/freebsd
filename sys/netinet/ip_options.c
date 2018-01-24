@@ -53,6 +53,8 @@ __FBSDID("$FreeBSD$");
 #include <net/if_dl.h>
 #include <net/route.h>
 #include <net/netisr.h>
+#include <net/net_uuid_kdtrace.h>
+#include <net/net_uuid.h>
 #include <net/vnet.h>
 
 #include <netinet/in.h>
@@ -525,6 +527,8 @@ ip_insertoptions(struct mbuf *m, struct mbuf *opt, int *phlen)
 			*phlen = 0;
 			return (m);
 		}
+		NET_UUID_PROBE2_STR_ADDRS(mem, alloc, 'M',m, n);
+		net_uuid_tag_move(n, m);
 		m_move_pkthdr(n, m);
 		n->m_pkthdr.rcvif = NULL;
 		n->m_pkthdr.len += optlen;
