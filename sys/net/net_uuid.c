@@ -46,6 +46,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/systm.h> // "
 
 #include <net/net_uuid.h>
+#include <net/net_uuid_kdtrace.h>
 
 // Tag type definitions are private to the implementation
 #define TAG_TYPE_UUID_STAMP	(1 | MTAG_PERSISTENT)
@@ -131,6 +132,8 @@ net_uuid_free_stamp_tag(struct m_tag *tag)
 			M_NET_UUID_LIST_ENTRY, M_NOWAIT);
 	entry->tag = (struct mtag_uuid *)tag;
 	STAILQ_INSERT_HEAD(&head, entry, entries);
+
+	NET_UUID_PROBE_STR(packet, trace__stop, 'T', entry->tag);
 
 	while (!STAILQ_EMPTY(&head)) {
 		entry = STAILQ_FIRST(&head);
@@ -248,6 +251,7 @@ net_uuid_tag_packet(struct mbuf *packet)
 	net_uuid_generate(&tag->uuid);
 	m_tag_prepend(packet, &tag->tag);
 
+	NET_UUID_PROBE_STR(packet, trace__start, 'T', tag);
 	return tag;
 }
 

@@ -64,6 +64,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if_llatbl.h>
 #include <net/netisr.h>
 #include <net/net_uuid.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/pfil.h>
 #include <net/route.h>
 #ifdef RADIX_MPATH
@@ -234,6 +235,7 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 
 	// Add CADETS UUID to the packet to track it through the stack
 	net_uuid_tag_packet(m);
+	NET_UUID_PROBE_STR_W_PTR(mem, alloc, 'M',m);
 
 	if (inp != NULL) {
 		INP_LOCK_ASSERT(inp);
@@ -771,6 +773,7 @@ ip_fragment(struct ip *ip, struct mbuf **m_frag, int mtu,
 	struct mbuf **mnext;
 	int nfrags;
 	uint16_t ip_len, ip_off;
+	struct mtag_uuid *m0_tag;
 
 	ip_len = ntohs(ip->ip_len);
 	ip_off = ntohs(ip->ip_off);
@@ -902,6 +905,7 @@ smart_frag_failure:
 		mac_netinet_fragment(m0, m);
 #endif
 		net_uuid_tag_child_packet(m0, m);
+		NET_UUID_PROBE2_STR_STR(packet, fragment, 'M',m0, 'M',m);
 		mhip->ip_off = htons(mhip->ip_off);
 		mhip->ip_sum = 0;
 		if (m->m_pkthdr.csum_flags & CSUM_IP & ~if_hwassist_flags) {
@@ -911,6 +915,10 @@ smart_frag_failure:
 		*mnext = m;
 		mnext = &m->m_nextpkt;
 	}
+	m0_tag = net_uuid_tag_child_packet(m0, m0);
+	NET_UUID_PROBE2_STR_STR(packet, fragment, 'T',m0_tag, 'M',m0);
+	NET_UUID_PROBE_STR(packet, trace__stop, 'T',m0_tag);
+
 	IPSTAT_ADD(ips_ofragments, nfrags);
 
 	/*
