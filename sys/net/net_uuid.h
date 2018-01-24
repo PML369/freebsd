@@ -57,6 +57,7 @@ struct mtag_uuid *
 struct mtag_uuid *
 	net_uuid_tag_child_packet(struct mbuf *, struct mbuf *);
 void	net_uuid_tag_assembled_packet(struct mbuf *, struct mbuf *);
+void	net_uuid_tag_move(struct mbuf *, struct mbuf *);
 
 char *	net_uuid_get_uuid_str(char, void *);
 char *	net_uuid_get_uuid_str_mbuf(struct mbuf *);

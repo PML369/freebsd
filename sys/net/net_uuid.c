@@ -72,6 +72,8 @@ net_uuid_tag_child_packet(struct mbuf *a, struct mbuf *b)
 	{ return NULL; }
 void
 net_uuid_tag_assembled_packet(struct mbuf *a, struct mbuf *b) { }
+void
+net_uuid_tag_move(struct mbuf *to, struct mbuf *from) { }
 
 char *
 net_uuid_get_uuid_str(char a, void *b) { return NULL; }
@@ -302,6 +304,17 @@ net_uuid_tag_assembled_packet(struct mbuf *assembled, struct mbuf *constituent)
 
 	constituent_tag->sibling = assembled_tag->child;
 	assembled_tag->child = constituent_tag;
+}
+void
+net_uuid_tag_move(struct mbuf *to, struct mbuf *from)
+{
+	struct mtag_uuid *tag;
+	if (from == NULL || to == NULL)
+		return;
+
+	tag = net_uuid_tag_locate(from);
+	if (tag != NULL)
+		m_tag_prepend(to, &tag->tag);
 }
 
 #endif // NO_NET_UUID_TRACING
