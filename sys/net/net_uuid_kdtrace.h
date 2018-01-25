@@ -95,6 +95,8 @@ SDT_PROBE_DECLARE(net_uuid, packet, ,	trace__start);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	trace__stop);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	fragment);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	drop);
+SDT_PROBE_DECLARE(net_uuid, packet, ,	from__socket);
+SDT_PROBE_DECLARE(net_uuid, packet, ,	to__socket);
 
 SDT_PROBE_DECLARE(net_uuid, packet, ,	to__subsys);
 

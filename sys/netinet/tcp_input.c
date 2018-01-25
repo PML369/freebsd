@@ -80,6 +80,7 @@ __FBSDID("$FreeBSD$");
 
 #include <net/if.h>
 #include <net/if_var.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/vnet.h>
 
@@ -1413,6 +1414,7 @@ tfo_socket_result:
 	}
 #endif
 	TCP_PROBE5(receive, NULL, tp, m, tp, th);
+	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',m, &so->so_uuid);
 
 	/*
 	 * Segment belongs to a connection in SYN_SENT, ESTABLISHED or later

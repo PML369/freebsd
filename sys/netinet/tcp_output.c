@@ -56,6 +56,8 @@ __FBSDID("$FreeBSD$");
 #include <sys/sysctl.h>
 
 #include <net/if.h>
+#include <net/net_uuid.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/vnet.h>
 
@@ -1020,6 +1022,12 @@ send:
 		m->m_data += max_linkhdr;
 		m->m_len = hdrlen;
 
+		// Tag packet with UUID, and show where it came from
+		net_uuid_tag_packet(m);
+		NET_UUID_PROBE2_STR_UUID_STR(packet, from__socket,
+				'M',m, &so->so_uuid);
+		NET_UUID_PROBE_STR_W_ADDRS(mem, alloc, 'M',m);
+
 		/*
 		 * Start the m_copy functions from the closest mbuf
 		 * to the offset in the socket buffer chain.
@@ -1039,6 +1047,7 @@ send:
 				sack_rxmit = 0;
 				goto out;
 			}
+			NET_UUID_PROBE2_STR(mem, alloc, 'M',m, m->m_next);
 		}
 
 		/*

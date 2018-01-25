@@ -70,6 +70,7 @@ __FBSDID("$FreeBSD$");
 
 #include <net/if.h>
 #include <net/if_var.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/rss_config.h>
 
@@ -383,6 +384,7 @@ udp_append(struct inpcb *inp, struct ip *ip, struct mbuf *n, int off,
 		UDPSTAT_INC(udps_fullsock);
 	} else
 		sorwakeup_locked(so);
+	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',n, &so->so_uuid);
 	return (0);
 }
 
