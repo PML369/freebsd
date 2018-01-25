@@ -249,6 +249,10 @@ net_uuid_tag_packet(struct mbuf *packet)
 {
 	struct mtag_uuid *tag;
 
+	tag = net_uuid_tag_locate(packet);
+	if (tag != NULL)
+		return tag;
+
 	tag = net_uuid_construct_stamp_tag();
 	net_uuid_generate(&tag->uuid);
 	m_tag_prepend(packet, &tag->tag);
