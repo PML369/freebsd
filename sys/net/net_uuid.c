@@ -233,14 +233,18 @@ net_uuid_get_uuid_str_mbuf(struct mbuf *mbuf)
 char *
 net_uuid_get_uuid_str_tag(struct mtag_uuid *tag)
 {
+	if (tag != NULL)
+		return net_uuid_get_uuid_str_uuid(&tag->uuid);
+
+	struct uuid n;
+	uuid_generate_nil(&n);
+	return net_uuid_get_uuid_str_uuid(&n);
+}
+char *
+net_uuid_get_uuid_str_uuid(struct uuid *uuid)
+{
 	char *buf = malloc(38, M_TEMP, M_NOWAIT);
-	if (tag != NULL) {
-		snprintf_uuid(buf, 38, &tag->uuid);
-	} else {
-		struct uuid n;
-		uuid_generate_nil(&n);
-		snprintf_uuid(buf, 38, &n);
-	}
+	snprintf_uuid(buf, 38, uuid);
 	return buf;
 }
 

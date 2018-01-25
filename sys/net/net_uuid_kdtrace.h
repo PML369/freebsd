@@ -71,6 +71,14 @@
 	free(str, M_TEMP);						\
 } while (0)
 
+#define NET_UUID_PROBE2_STR_UUID_STR(mod, probe, t0, mt0, uuid1) do {	\
+	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
+	char *str1 = net_uuid_get_uuid_str_uuid(uuid1);			\
+	SDT_PROBE2(net_uuid, mod, , probe, str0, str1);			\
+	free(str0, M_TEMP);						\
+	free(str1, M_TEMP);						\
+} while (0)
+
 #define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)	do {	\
 	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
 	char *str1 = net_uuid_get_uuid_str(t1, mt1);			\

@@ -62,6 +62,7 @@ void	net_uuid_tag_move(struct mbuf *, struct mbuf *);
 char *	net_uuid_get_uuid_str(char, void *);
 char *	net_uuid_get_uuid_str_mbuf(struct mbuf *);
 char *	net_uuid_get_uuid_str_tag(struct mtag_uuid *);
+char *	net_uuid_get_uuid_str_uuid(struct uuid *);
 
 #endif /* _KERNEL */
 #endif /* _SYS_NET_UUID_H_ */
