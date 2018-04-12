@@ -1415,7 +1415,6 @@ tfo_socket_result:
 #endif
 	TCP_PROBE5(receive, NULL, tp, m, tp, th);
 	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',m, &so->so_uuid);
-	NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 
 	/*
 	 * Segment belongs to a connection in SYN_SENT, ESTABLISHED or later

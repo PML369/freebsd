@@ -261,7 +261,7 @@ net_uuid_tag_packet(struct mbuf *packet)
 	net_uuid_generate(&tag->uuid);
 	m_tag_prepend(packet, &tag->tag);
 
-	NET_UUID_PROBE_STR(packet, trace__start, 'T', tag);
+	NET_UUID_PROBE2_STR_ADDRS(packet, trace__start, 'T', tag, packet);
 	return tag;
 }
 

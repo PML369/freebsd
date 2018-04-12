@@ -822,8 +822,6 @@ ours:
 	 * Switch out to protocol's input routine.
 	 */
 	IPSTAT_INC(ips_delivered);
-	if (ip->ip_p != IPPROTO_TCP)
-		NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 
 	(*inetsw[ip_protox[ip->ip_p]].pr_input)(&m, &hlen, ip->ip_p);
 	return;

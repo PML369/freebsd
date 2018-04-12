@@ -1026,7 +1026,6 @@ send:
 		net_uuid_tag_packet(m);
 		NET_UUID_PROBE2_STR_UUID_STR(packet, from__socket,
 				'M',m, &so->so_uuid);
-		NET_UUID_PROBE_STR_W_ADDRS(mem, alloc, 'M',m);
 
 		/*
 		 * Start the m_copy functions from the closest mbuf
