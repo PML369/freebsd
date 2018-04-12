@@ -101,6 +101,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if.h>
 #include <net/if_var.h>
 #include <net/netisr.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/vnet.h>
 
@@ -1314,6 +1315,7 @@ X_ip_mforward(struct ip *ip, struct ifnet *ifp, struct mbuf *m,
 	    VIF_UNLOCK();
 	    return ENOBUFS;
 	}
+	NET_UUID_PROBE2_STR_ADDRS(mem, alloc, 'M',m, mb0);
 
 	/* is there an upcall waiting for this flow ? */
 	hash = MFCHASH(ip->ip_src, ip->ip_dst);

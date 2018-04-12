@@ -710,6 +710,7 @@ sendit:
 
 			IP_PROBE(send, NULL, NULL, mtod(m, struct ip *), ifp,
 			    mtod(m, struct ip *), NULL);
+			NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 #ifdef RATELIMIT
 			if (inp != NULL) {
 				if (inp->inp_flags2 & INP_RATE_LIMIT_CHANGED)
@@ -727,8 +728,10 @@ sendit:
 			if (error == EAGAIN)
 				in_pcboutput_eagain(inp);
 #endif
-		} else
+		} else {
+			NET_UUID_PROBE_STR(packet, drop, 'M',m);
 			m_freem(m);
+		}
 	}
 
 	if (error == 0)

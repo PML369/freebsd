@@ -95,6 +95,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if_var.h>
 #include <net/netisr.h>
 #include <net/netisr_internal.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/vnet.h>
 
 /*-
@@ -1209,6 +1210,9 @@ out_unlock:
 int
 netisr_dispatch(u_int proto, struct mbuf *m)
 {
+	// Add CADETS UUID to the packet to track it through the stack
+	net_uuid_tag_packet(m);
+	NET_UUID_PROBE_STR_W_ADDRS(mem, alloc, 'M',m);
 
 	return (netisr_dispatch_src(proto, 0, m));
 }
