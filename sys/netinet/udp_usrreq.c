@@ -375,6 +375,7 @@ udp_append(struct inpcb *inp, struct ip *ip, struct mbuf *n, int off,
 	m_adj(n, off);
 
 	so = inp->inp_socket;
+	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',n, &so->so_uuid);
 	SOCKBUF_LOCK(&so->so_rcv);
 	if (sbappendaddr_locked(&so->so_rcv, append_sa, n, opts) == 0) {
 		SOCKBUF_UNLOCK(&so->so_rcv);
@@ -384,7 +385,6 @@ udp_append(struct inpcb *inp, struct ip *ip, struct mbuf *n, int off,
 		UDPSTAT_INC(udps_fullsock);
 	} else
 		sorwakeup_locked(so);
-	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',n, &so->so_uuid);
 	return (0);
 }
 
