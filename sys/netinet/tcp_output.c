@@ -1084,6 +1084,11 @@ send:
 #endif
 		m->m_data += max_linkhdr;
 		m->m_len = hdrlen;
+
+		// Tag packet with UUID, and show where it came from
+		net_uuid_tag_packet(m);
+		NET_UUID_PROBE2_STR_UUID_STR(packet, from__socket,
+				'M',m, &so->so_uuid);
 	}
 	SOCKBUF_UNLOCK_ASSERT(&so->so_snd);
 	m->m_pkthdr.rcvif = (struct ifnet *)0;
