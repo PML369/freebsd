@@ -71,6 +71,12 @@
 	free(str, M_TEMP);						\
 } while (0)
 
+#define NET_UUID_PROBE2_UUID_STR(mod, probe, uuid0, arg1)	do {	\
+	char *str = net_uuid_get_uuid_str_uuid(uuid0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, str, arg1);			\
+	free(str, M_TEMP);						\
+} while (0)
+
 #define NET_UUID_PROBE2_STR_UUID_STR(mod, probe, t0, mt0, uuid1) do {	\
 	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
 	char *str1 = net_uuid_get_uuid_str_uuid(uuid1);			\
@@ -99,6 +105,8 @@ SDT_PROBE_DECLARE(net_uuid, packet, ,	from__socket);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	to__socket);
 
 SDT_PROBE_DECLARE(net_uuid, packet, ,	to__subsys);
+
+SDT_PROBE_DECLARE(net_uuid, socket, ,	create);
 
 #endif // NO_NET_UUID_TRACING
 #endif // _SYS_NET_UUID_KDTRACE_H_

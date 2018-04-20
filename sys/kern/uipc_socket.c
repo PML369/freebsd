@@ -145,6 +145,7 @@ __FBSDID("$FreeBSD$");
 #include <sys/syslog.h>
 #include <netinet/in.h>
 
+#include <net/net_uuid_kdtrace.h>
 #include <net/vnet.h>
 
 #include <security/audit/audit.h>
@@ -531,6 +532,7 @@ socreate(int dom, struct socket **aso, int type, int proto,
 	if (prp->pr_type != type)
 		return (EPROTOTYPE);
 	so = soalloc(CRED_TO_VNET(cred));
+	NET_UUID_PROBE2_UUID_STR(socket, create, &so->so_uuid, td->td_proc);
 	if (so == NULL)
 		return (ENOBUFS);
 

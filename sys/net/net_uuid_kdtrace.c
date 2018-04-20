@@ -46,4 +46,7 @@ SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__socket,	"char *", "char *");
 
 SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__subsys,	"char *", "char *");
 
+SDT_PROBE_DEFINE2_XLATE(net_uuid, socket, , create,	"char *", "char *",
+						"struct proc *", "psinfo_t");
+
 #endif // NO_NET_UUID_TRACING
