@@ -235,6 +235,7 @@ ip_output(struct mbuf *m, struct mbuf *opt, struct route *ro, int flags,
 
 	// Add CADETS UUID to the packet to track it through the stack
 	net_uuid_tag_packet(m);
+	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "IP");
 
 	if (inp != NULL) {
 		INP_LOCK_ASSERT(inp);
@@ -657,6 +658,7 @@ sendit:
 		 */
 		m_clrprotoflags(m);
 		IP_PROBE(send, NULL, NULL, ip, ifp, ip, NULL);
+		NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "IP");
 		NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 #ifdef RATELIMIT
 		if (inp != NULL) {

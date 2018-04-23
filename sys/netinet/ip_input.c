@@ -459,6 +459,7 @@ ip_input(struct mbuf *m)
 	struct in_addr odst;			/* original dst address */
 
 	M_ASSERTPKTHDR(m);
+	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "IP");
 
 	if (m->m_flags & M_FASTFWD_OURS) {
 		m->m_flags &= ~M_FASTFWD_OURS;
@@ -822,6 +823,7 @@ ours:
 	 * Switch out to protocol's input routine.
 	 */
 	IPSTAT_INC(ips_delivered);
+	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "IP");
 
 	(*inetsw[ip_protox[ip->ip_p]].pr_input)(&m, &hlen, ip->ip_p);
 	return;

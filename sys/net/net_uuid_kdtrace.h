@@ -104,6 +104,8 @@ SDT_PROBE_DECLARE(net_uuid, packet, ,	drop);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	from__socket);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	to__socket);
 
+SDT_PROBE_DECLARE(net_uuid, packet, ,	layer__arrive);
+SDT_PROBE_DECLARE(net_uuid, packet, ,	layer__depart);
 SDT_PROBE_DECLARE(net_uuid, packet, ,	to__subsys);
 
 SDT_PROBE_DECLARE(net_uuid, socket, ,	create);

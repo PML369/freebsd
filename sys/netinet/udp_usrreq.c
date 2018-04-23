@@ -376,6 +376,7 @@ udp_append(struct inpcb *inp, struct ip *ip, struct mbuf *n, int off,
 
 	so = inp->inp_socket;
 	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',n, &so->so_uuid);
+	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "UDP");
 	SOCKBUF_LOCK(&so->so_rcv);
 	if (sbappendaddr_locked(&so->so_rcv, append_sa, n, opts) == 0) {
 		SOCKBUF_UNLOCK(&so->so_rcv);
@@ -408,6 +409,7 @@ udp_input(struct mbuf **mp, int *offp, int proto)
 	ifp = m->m_pkthdr.rcvif;
 	*mp = NULL;
 	UDPSTAT_INC(udps_ipackets);
+	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "UDP");
 
 	/*
 	 * Strip IP options, if any; should skip this, make available to
@@ -1120,6 +1122,8 @@ udp_output(struct inpcb *inp, struct mbuf *m, struct sockaddr *addr,
 	uint32_t flowid = 0;
 	uint8_t flowtype = M_HASHTYPE_NONE;
 
+	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "UDP");
+
 	/*
 	 * udp_output() may need to temporarily bind or connect the current
 	 * inpcb.  As such, we don't know up front whether we will need the
@@ -1523,6 +1527,7 @@ udp_output(struct inpcb *inp, struct mbuf *m, struct sockaddr *addr,
 	else if (unlock_udbinfo == UH_RLOCKED)
 		INP_HASH_RUNLOCK(pcbinfo);
 	UDP_PROBE(send, NULL, inp, &ui->ui_i, inp, &ui->ui_u);
+	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "UDP");
 	error = ip_output(m, inp->inp_options,
 	    (unlock_inp == UH_WLOCKED ? &inp->inp_route : NULL), ipflags,
 	    inp->inp_moptions, inp);

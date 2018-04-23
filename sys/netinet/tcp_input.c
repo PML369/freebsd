@@ -614,6 +614,8 @@ tcp_input(struct mbuf **mp, int *offp, int proto)
 	to.to_flags = 0;
 	TCPSTAT_INC(tcps_rcvtotal);
 
+	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "TCP");
+
 #ifdef INET6
 	if (isipv6) {
 		/* IP6_EXTHDR_CHECK() is already done at tcp6_input(). */
@@ -1938,6 +1940,8 @@ tcp_do_segment(struct mbuf *m, struct tcphdr *th, struct socket *so,
 						so->so_rcv.sb_flags &= ~SB_AUTOSIZE;
 				m_adj(m, drop_hdrlen);	/* delayed header drop */
 				sbappendstream_locked(&so->so_rcv, m, 0);
+				NET_UUID_PROBE2_STR(packet, layer__depart,
+								'M',m, "TCP");
 			}
 			/* NB: sorwakeup_locked() does an implicit unlock. */
 			sorwakeup_locked(so);
@@ -3073,8 +3077,11 @@ dodata:							/* XXX */
 			SOCKBUF_LOCK(&so->so_rcv);
 			if (so->so_rcv.sb_state & SBS_CANTRCVMORE)
 				m_freem(m);
-			else
+			else {
 				sbappendstream_locked(&so->so_rcv, m, 0);
+				NET_UUID_PROBE2_STR(packet, layer__depart,
+								'M',m, "TCP");
+			}
 			/* NB: sorwakeup_locked() does an implicit unlock. */
 			sorwakeup_locked(so);
 		} else {
