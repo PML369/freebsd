@@ -376,7 +376,7 @@ udp_append(struct inpcb *inp, struct ip *ip, struct mbuf *n, int off,
 
 	so = inp->inp_socket;
 	NET_UUID_PROBE2_STR_UUID_STR(packet, to__socket, 'M',n, &so->so_uuid);
-	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "UDP");
+	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',n, "UDP");
 	SOCKBUF_LOCK(&so->so_rcv);
 	if (sbappendaddr_locked(&so->so_rcv, append_sa, n, opts) == 0) {
 		SOCKBUF_UNLOCK(&so->so_rcv);

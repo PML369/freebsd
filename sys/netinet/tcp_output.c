@@ -1088,6 +1088,7 @@ send:
 
 		// Tag packet with UUID, and show where it came from
 		net_uuid_tag_packet(m);
+		NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "TCP");
 		NET_UUID_PROBE2_STR_UUID_STR(packet, from__socket,
 				'M',m, &so->so_uuid);
 	}
@@ -1379,6 +1380,7 @@ send:
 		tcp_pcap_add(th, m, &(tp->t_outpkts));
 #endif
 
+		NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "TCP");
 		/* TODO: IPv6 IP6TOS_ECT bit on */
 		error = ip6_output(m, tp->t_inpcb->in6p_outputopts,
 		    &tp->t_inpcb->inp_route6,
