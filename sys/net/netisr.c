@@ -994,6 +994,7 @@ netisr_queue_workstream(struct netisr_workstream *nwsp, u_int proto,
 		npwp->nw_queued++;
 		return (0);
 	} else {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		npwp->nw_qdrops++;
 		return (ENOBUFS);
@@ -1046,6 +1047,7 @@ netisr_queue_src(u_int proto, uintptr_t source, struct mbuf *m)
 
 #ifdef VIMAGE
 	if (V_netisr_enable[proto] == 0) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return (ENOPROTOOPT);
 	}
@@ -1099,6 +1101,7 @@ netisr_dispatch_src(u_int proto, uintptr_t source, struct mbuf *m)
 
 #ifdef VIMAGE
 	if (V_netisr_enable[proto] == 0) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return (ENOPROTOOPT);
 	}

@@ -1352,6 +1352,8 @@ X_ip_mforward(struct ip *ip, struct ifnet *ifp, struct mbuf *m,
 	    if (mm == NULL)
 		goto fail1;
 
+	    NET_UUID_PROBE2_STR_ADDRS(mem, alloc, 'M',m, mm);
+
 	    /*
 	     * Send message to routing daemon to install
 	     * a route into the kernel table

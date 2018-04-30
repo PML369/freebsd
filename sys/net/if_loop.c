@@ -56,6 +56,7 @@
 #include <net/if_clone.h>
 #include <net/if_types.h>
 #include <net/netisr.h>
+#include <net/net_uuid.h>
 #include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/bpf.h>
@@ -367,6 +368,8 @@ if_simloop(struct ifnet *ifp, struct mbuf *m, int af, int hlen)
 	}
 	if_inc_counter(ifp, IFCOUNTER_IPACKETS, 1);
 	if_inc_counter(ifp, IFCOUNTER_IBYTES, m->m_pkthdr.len);
+	/* Make sure packet has a different tag for going back up the stack */
+	net_uuid_tag_child_packet(m, m);
 	netisr_queue(isr, m);	/* mbuf is free'd on failure. */
 	return (0);
 }

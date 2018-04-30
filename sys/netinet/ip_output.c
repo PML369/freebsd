@@ -145,6 +145,8 @@ ip_output_pfil(struct mbuf **mp, struct ifnet *ifp, struct inpcb *inp,
 			if (m->m_pkthdr.csum_flags & CSUM_SCTP)
 				m->m_pkthdr.csum_flags |= CSUM_SCTP_VALID;
 #endif
+			/* Make sure packet has a different tag */
+			net_uuid_tag_child_packet(m, m);
 			*error = netisr_queue(NETISR_IP, m);
 			return 1; /* Finished */
 		}
@@ -179,6 +181,8 @@ ip_output_pfil(struct mbuf **mp, struct ifnet *ifp, struct inpcb *inp,
 		m->m_pkthdr.csum_flags |=
 			CSUM_IP_CHECKED | CSUM_IP_VALID;
 
+		/* Make sure packet has a different tag */
+		net_uuid_tag_child_packet(m, m);
 		*error = netisr_queue(NETISR_IP, m);
 		return 1; /* Finished */
 	}
@@ -511,6 +515,7 @@ again:
 		 * the loopback interface.
 		 */
 		if (ip->ip_ttl == 0 || ifp->if_flags & IFF_LOOPBACK) {
+			NET_UUID_PROBE_STR(packet, drop, 'M',m);
 			m_freem(m);
 			goto done;
 		}
@@ -753,6 +758,7 @@ done:
 		ifa_free(&ia->ia_ifa);
 	return (error);
 bad:
+	NET_UUID_PROBE_STR(packet, drop, 'M',m);
 	m_freem(m);
 	goto done;
 }

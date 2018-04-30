@@ -48,6 +48,7 @@
 
 #include <net/if.h>
 #include <net/if_var.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/pfil.h>
 
 static struct mtx pfil_global_lock;
@@ -101,12 +102,18 @@ pfil_run_hooks(struct pfil_head *ph, struct mbuf **mp, struct ifnet *ifp,
 	struct packet_filter_hook *pfh;
 	struct mbuf *m = *mp;
 	int rv = 0;
+	bool probed = false;
 
 	PFIL_RLOCK(ph, &rmpt);
 	KASSERT(ph->ph_nhooks >= 0, ("Pfil hook count dropped < 0"));
 	for (pfh = pfil_chain_get(dir, ph); pfh != NULL;
-	     pfh = TAILQ_NEXT(pfh, pfil_chain)) {
+		pfh = TAILQ_NEXT(pfh, pfil_chain)) {
 		if (pfh->pfil_func != NULL) {
+			if (!probed) {
+				NET_UUID_PROBE2_STR(packet, to__subsys, 'M',m,
+									"PFIL");
+				probed = true;
+			}
 			rv = (*pfh->pfil_func)(pfh->pfil_arg, &m, ifp, dir,
 			    inp);
 			if (rv != 0 || m == NULL)

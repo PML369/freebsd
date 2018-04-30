@@ -50,6 +50,7 @@
 #include <net/if.h>
 #include <net/if_enc.h>
 #include <net/if_var.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/vnet.h>
 
 #include <netinet/in.h>
@@ -276,8 +277,10 @@ ipsec4_perform_request(struct mbuf *m, struct secpolicy *sp,
 	return (error);
 bad:
 	IPSECSTAT_INC(ips_out_inval);
-	if (m != NULL)
+	if (m != NULL) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
+	}
 	if (sav != NULL)
 		key_freesav(&sav);
 	key_freesp(&sp);
@@ -844,9 +847,11 @@ ipsec_prepend(struct mbuf *m, int len, int how)
 	}
 	n = m_gethdr(how, m->m_type);
 	if (n == NULL) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return (NULL);
 	}
+	NET_UUID_PROBE2_STR_ADDRS(mem, alloc, 'M',m, n);
 	m_move_pkthdr(n, m);
 	n->m_next = m;
 	if (len + IPSEC_TRAILINGSPACE < M_SIZE(n))
