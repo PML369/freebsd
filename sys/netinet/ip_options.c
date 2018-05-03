@@ -225,6 +225,7 @@ nosourcerouting:
 dropit:
 #endif
 					IPSTAT_INC(ips_cantforward);
+					NET_UUID_PROBE_STR(packet, drop, 'M',m);
 					m_freem(m);
 					return (1);
 				}

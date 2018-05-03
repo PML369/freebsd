@@ -49,6 +49,7 @@ __FBSDID("$FreeBSD$");
 #include <net/rss_config.h>
 #include <net/netisr.h>
 #include <net/net_uuid.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/vnet.h>
 
 #include <netinet/in.h>
@@ -161,6 +162,7 @@ ip_reass(struct mbuf *m)
 	if (V_noreass == 1 || V_maxfragsperpacket == 0) {
 		IPSTAT_INC(ips_fragments);
 		IPSTAT_INC(ips_fragdropped);
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return (NULL);
 	}
@@ -181,6 +183,7 @@ ip_reass(struct mbuf *m)
 		if (ip->ip_len == htons(0) || (ntohs(ip->ip_len) & 0x7) != 0) {
 			IPSTAT_INC(ips_toosmall); /* XXX */
 			IPSTAT_INC(ips_fragdropped);
+			NET_UUID_PROBE_STR(packet, drop, 'M',m);
 			m_freem(m);
 			return (NULL);
 		}
@@ -451,6 +454,7 @@ dropfrag:
 	IPSTAT_INC(ips_fragdropped);
 	if (fp != NULL)
 		fp->ipq_nfrags--;
+	NET_UUID_PROBE_STR(packet, drop, 'M',m);
 	m_freem(m);
 done:
 	IPQ_UNLOCK(hash);
@@ -630,6 +634,7 @@ ipq_reuse(int start)
 			while (fp->ipq_frags) {
 				m = fp->ipq_frags;
 				fp->ipq_frags = m->m_nextpkt;
+				NET_UUID_PROBE_STR(packet, drop, 'M',m);
 				m_freem(m);
 			}
 			TAILQ_REMOVE(&V_ipq[i].head, fp, ipq_list);
@@ -654,6 +659,7 @@ ipq_free(struct ipqhead *fhp, struct ipq *fp)
 	while (fp->ipq_frags) {
 		q = fp->ipq_frags;
 		fp->ipq_frags = q->m_nextpkt;
+		NET_UUID_PROBE_STR(packet, drop, 'M',q);
 		m_freem(q);
 	}
 	TAILQ_REMOVE(fhp, fp, ipq_list);

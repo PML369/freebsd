@@ -64,6 +64,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if_dl.h>
 #include <net/route.h>
 #include <net/netisr.h>
+#include <net/net_uuid.h>
 #include <net/net_uuid_kdtrace.h>
 #include <net/rss_config.h>
 #include <net/vnet.h>
@@ -457,6 +458,7 @@ ip_input(struct mbuf *m)
 	uint16_t sum, ip_len;
 	int dchg = 0;				/* dest changed after fw */
 	struct in_addr odst;			/* original dst address */
+	struct mtag_uuid *tag = net_uuid_tag_clone(m); /* our free */
 
 	M_ASSERTPKTHDR(m);
 	NET_UUID_PROBE2_STR(packet, layer__arrive, 'M',m, "IP");
@@ -477,8 +479,9 @@ ip_input(struct mbuf *m)
 
 	if (m->m_len < sizeof (struct ip) &&
 	    (m = m_pullup(m, sizeof (struct ip))) == NULL) {
+		NET_UUID_PROBE_STR(packet, drop, 'T',tag);
 		IPSTAT_INC(ips_toosmall);
-		return;
+		goto freetag;
 	}
 	ip = mtod(m, struct ip *);
 
@@ -495,7 +498,7 @@ ip_input(struct mbuf *m)
 	if (hlen > m->m_len) {
 		if ((m = m_pullup(m, hlen)) == NULL) {
 			IPSTAT_INC(ips_badhlen);
-			return;
+			goto freetag;
 		}
 		ip = mtod(m, struct ip *);
 	}
@@ -529,7 +532,7 @@ ip_input(struct mbuf *m)
 #ifdef ALTQ
 	if (altq_input != NULL && (*altq_input)(m, AF_INET) == 0)
 		/* packet is dropped by traffic conditioner */
-		return;
+		goto freetag;
 #endif
 
 	ip_len = ntohs(ip->ip_len);
@@ -572,7 +575,7 @@ tooshort:
 #endif
 	    ) {
 		if ((m = ip_tryforward(m)) == NULL)
-			return;
+			goto freetag;
 		if (m->m_flags & M_FASTFWD_OURS) {
 			m->m_flags &= ~M_FASTFWD_OURS;
 			ip = mtod(m, struct ip *);
@@ -603,9 +606,9 @@ tooshort:
 
 	odst = ip->ip_dst;
 	if (pfil_run_hooks(&V_inet_pfil_hook, &m, ifp, PFIL_IN, NULL) != 0)
-		return;
+		goto freetag;
 	if (m == NULL)			/* consumed by filter */
-		return;
+		goto freetag;
 
 	ip = mtod(m, struct ip *);
 	dchg = (odst.s_addr != ip->ip_dst.s_addr);
@@ -623,7 +626,7 @@ tooshort:
 			 * to some other directly connected host.
 			 */
 			ip_forward(m, 1);
-			return;
+			goto freetag;
 		}
 	}
 passin:
@@ -635,7 +638,7 @@ passin:
 	 * to be sent and the original packet to be freed).
 	 */
 	if (hlen > sizeof (struct ip) && ip_dooptions(m, 0))
-		return;
+		goto freetag;
 
         /* greedy RSVP, snatches any PATH packet of the RSVP protocol and no
          * matter if it is destined to another node, or whether it is 
@@ -737,8 +740,9 @@ passin:
 	/* RFC 3927 2.7: Do not forward datagrams for 169.254.0.0/16. */
 	if (IN_LINKLOCAL(ntohl(ip->ip_dst.s_addr))) {
 		IPSTAT_INC(ips_cantforward);
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
-		return;
+		goto freetag;
 	}
 	if (IN_MULTICAST(ntohl(ip->ip_dst.s_addr))) {
 		if (V_ip_mrouter) {
@@ -752,8 +756,9 @@ passin:
 			 */
 			if (ip_mforward && ip_mforward(ip, ifp, m, 0) != 0) {
 				IPSTAT_INC(ips_cantforward);
+				NET_UUID_PROBE_STR(packet, drop, 'M',m);
 				m_freem(m);
-				return;
+				goto freetag;
 			}
 
 			/*
@@ -782,11 +787,12 @@ passin:
 	 */
 	if (V_ipforwarding == 0) {
 		IPSTAT_INC(ips_cantforward);
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 	} else {
 		ip_forward(m, dchg);
 	}
-	return;
+	goto freetag;
 
 ours:
 #ifdef IPSTEALTH
@@ -795,7 +801,7 @@ ours:
 	 * if the packet is destined for us.
 	 */
 	if (V_ipstealth && hlen > sizeof (struct ip) && ip_dooptions(m, 1))
-		return;
+		goto freetag;
 #endif /* IPSTEALTH */
 
 	/*
@@ -805,8 +811,10 @@ ours:
 	if (ip->ip_off & htons(IP_MF | IP_OFFMASK)) {
 		/* XXXGL: shouldn't we save & set m_flags? */
 		m = ip_reass(m);
-		if (m == NULL)
-			return;
+		if (m == NULL) {
+			NET_UUID_PROBE_STR(packet, drop, 'T',tag);
+			goto freetag;
+		}
 		ip = mtod(m, struct ip *);
 		/* Get the header length of the reassembled packet */
 		hlen = ip->ip_hl << 2;
@@ -815,7 +823,7 @@ ours:
 #if defined(IPSEC) || defined(IPSEC_SUPPORT)
 	if (IPSEC_ENABLED(ipv4)) {
 		if (IPSEC_INPUT(ipv4, m, hlen, ip->ip_p) != 0)
-			return;
+			goto freetag;
 	}
 #endif /* IPSEC */
 
@@ -826,9 +834,12 @@ ours:
 	NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "IP");
 
 	(*inetsw[ip_protox[ip->ip_p]].pr_input)(&m, &hlen, ip->ip_p);
-	return;
+	goto freetag;
 bad:
+	NET_UUID_PROBE_STR(packet, drop, 'T',tag);
 	m_freem(m);
+freetag:
+	net_uuid_tag_free(tag);
 }
 
 /*
@@ -956,6 +967,7 @@ ip_forward(struct mbuf *m, int srcrt)
 
 	if (m->m_flags & (M_BCAST|M_MCAST) || in_canforward(ip->ip_dst) == 0) {
 		IPSTAT_INC(ips_cantforward);
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
 		return;
 	}
@@ -964,6 +976,7 @@ ip_forward(struct mbuf *m, int srcrt)
 	    V_ipstealth == 0 &&
 #endif
 	    ip->ip_ttl <= IPTTLDEC) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		icmp_error(m, ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, 0, 0);
 		return;
 	}
@@ -1015,6 +1028,7 @@ ip_forward(struct mbuf *m, int srcrt)
 	if (mcopy != NULL) {
 		mcopy->m_len = min(ntohs(ip->ip_len), M_TRAILINGSPACE(mcopy));
 		mcopy->m_pkthdr.len = mcopy->m_len;
+		NET_UUID_PROBE2_STR_ADDRS(packet, drop, 'M',m, mcopy);
 		m_copydata(m, 0, mcopy->m_len, mtod(mcopy, caddr_t));
 	}
 #ifdef IPSTEALTH

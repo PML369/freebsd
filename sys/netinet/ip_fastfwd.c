@@ -95,6 +95,7 @@ __FBSDID("$FreeBSD$");
 #include <net/if_types.h>
 #include <net/if_var.h>
 #include <net/if_dl.h>
+#include <net/net_uuid_kdtrace.h>
 #include <net/route.h>
 #include <net/vnet.h>
 
@@ -182,6 +183,7 @@ ip_tryforward(struct mbuf *m)
 		if (V_ip_doopts == 1)
 			return m;
 		else if (V_ip_doopts == 2) {
+			NET_UUID_PROBE_STR(packet, drop, 'M',m);
 			icmp_error(m, ICMP_UNREACH, ICMP_UNREACH_FILTER_PROHIB,
 				0, 0);
 			return NULL;	/* mbuf already free'd */
@@ -275,6 +277,7 @@ passin:
 	if (!V_ipstealth) {
 #endif
 	if (ip->ip_ttl <= IPTTLDEC) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		icmp_error(m, ICMP_TIMXCEED, ICMP_TIMXCEED_INTRANS, 0, 0);
 		return NULL;	/* mbuf already free'd */
 	}
@@ -370,6 +373,8 @@ passout:
 		 * Send off the packet via outgoing interface
 		 */
 		IP_PROBE(send, NULL, NULL, ip, nh.nh_ifp, ip, NULL);
+		NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "IP");
+		NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 		error = (*nh.nh_ifp->if_output)(nh.nh_ifp, m,
 		    (struct sockaddr *)&dst, NULL);
 	} else {
@@ -378,6 +383,7 @@ passout:
 		 */
 		if (ip_off & IP_DF) {
 			IPSTAT_INC(ips_cantfrag);
+			NET_UUID_PROBE_STR(packet, drop, 'M',m);
 			icmp_error(m, ICMP_UNREACH, ICMP_UNREACH_NEEDFRAG,
 				0, nh.nh_mtu);
 			goto consumed;
@@ -390,6 +396,8 @@ passout:
 			    nh.nh_ifp->if_hwassist) != 0)
 				goto drop;
 			KASSERT(m != NULL, ("null mbuf and no error"));
+			NET_UUID_PROBE2_STR(packet, layer__depart, 'M',m, "IP");
+			NET_UUID_PROBE_STR(packet, trace__stop, 'M',m);
 			/*
 			 * Send off the fragments via outgoing interface
 			 */
@@ -431,7 +439,9 @@ passout:
 consumed:
 	return NULL;
 drop:
-	if (m)
+	if (m) {
+		NET_UUID_PROBE_STR(packet, drop, 'M',m);
 		m_freem(m);
+	}
 	return NULL;
 }
