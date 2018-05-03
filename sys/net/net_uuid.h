@@ -59,6 +59,9 @@ struct mtag_uuid *
 void	net_uuid_tag_assembled_packet(struct mbuf *, struct mbuf *);
 void	net_uuid_tag_move(struct mbuf *, struct mbuf *);
 
+struct mtag_uuid *
+	net_uuid_tag_clone(struct mbuf *mbuf); // caller free
+void	net_uuid_tag_free(struct mtag_uuid *); // accepts NULL
 char *	net_uuid_get_uuid_str(char, void *);
 char *	net_uuid_get_uuid_str_mbuf(struct mbuf *);
 char *	net_uuid_get_uuid_str_tag(struct mtag_uuid *);

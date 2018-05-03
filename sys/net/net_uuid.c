@@ -75,6 +75,10 @@ net_uuid_tag_assembled_packet(struct mbuf *a, struct mbuf *b) { }
 void
 net_uuid_tag_move(struct mbuf *to, struct mbuf *from) { }
 
+struct mtag_uuid *
+net_uuid_tag_clone(struct mbuf *mbuf) { return NULL; }
+void
+net_uuid_tag_free(struct mtag_uuid *tag) { return NULL; }
 char *
 net_uuid_get_uuid_str(char a, void *b) { return NULL; }
 char *
@@ -208,6 +212,19 @@ net_uuid_tag_locate(struct mbuf *mbuf)
 			MTAG_COOKIE_NET_UUID,
 			TAG_TYPE_UUID_STAMP,
 			NULL);
+}
+
+struct mtag_uuid *
+net_uuid_tag_clone(struct mbuf *mbuf)
+{
+	return net_uuid_tag_deep_copy(net_uuid_tag_locate(mbuf));
+}
+
+void
+net_uuid_tag_free(struct mtag_uuid *tag)
+{
+	if (tag != NULL)
+		net_uuid_free_stamp_tag(&tag->tag);
 }
 
 char *
