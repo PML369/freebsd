@@ -33,22 +33,25 @@
 
 #ifndef NO_NET_UUID_TRACING
 
+// Since this is a .c file, we are not polluting anything with this
+#define uuid_t "struct uuid *"
+
 SDT_PROVIDER_DEFINE(net_uuid);
 
-SDT_PROBE_DEFINE2(net_uuid, mem, ,	alloc,	"char *", "struct mbuf *");
+SDT_PROBE_DEFINE2(net_uuid, mem, ,	alloc,		uuid_t, uuid_t);
 
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	trace__start,"char *", "struct mbuf *");
-SDT_PROBE_DEFINE1(net_uuid, packet, ,	trace__stop,	"char *");
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	fragment,	"char *", "char *");
-SDT_PROBE_DEFINE1(net_uuid, packet, ,	drop,		"char *");
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	from__socket,	"char *", "char *");
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__socket,	"char *", "char *");
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	trace__start,uuid_t, "struct mbuf *");
+SDT_PROBE_DEFINE1(net_uuid, packet, ,	trace__stop,	uuid_t);
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	fragment,	uuid_t, uuid_t);
+SDT_PROBE_DEFINE1(net_uuid, packet, ,	drop,		uuid_t);
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	from__socket,	uuid_t, uuid_t);
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__socket,	uuid_t, uuid_t);
 
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	layer__arrive,	"char *", "char *");
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	layer__depart,	"char *", "char *");
-SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__subsys,	"char *", "char *");
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	layer__arrive,	uuid_t, "char *");
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	layer__depart,	uuid_t, "char *");
+SDT_PROBE_DEFINE2(net_uuid, packet, ,	to__subsys,	uuid_t, "char *");
 
-SDT_PROBE_DEFINE2_XLATE(net_uuid, socket, , create,	"char *", "char *",
+SDT_PROBE_DEFINE2_XLATE(net_uuid, socket, , create,	uuid_t, uuid_t,
 						"struct proc *", "psinfo_t");
 
 #endif // NO_NET_UUID_TRACING

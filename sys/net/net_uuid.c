@@ -79,12 +79,12 @@ struct mtag_uuid *
 net_uuid_tag_clone(struct mbuf *mbuf) { return NULL; }
 void
 net_uuid_tag_free(struct mtag_uuid *tag) { return NULL; }
-char *
-net_uuid_get_uuid_str(char a, void *b) { return NULL; }
-char *
-net_uuid_get_uuid_str_mbuf(struct mbuf *a) { return NULL; }
-char *
-net_uuid_get_uuid_str_tag(struct mtag_uuid *a) { return NULL; }
+struct uuid *
+net_uuid_get_uuid(char type, void *structure) { return NULL; }
+struct uuid *
+net_uuid_get_uuid_mbuf(struct mbuf *mbuf) { return NULL; }
+struct uuid *
+net_uuid_get_uuid_tag(struct mtag_uuid *tag) { return NULL; }
 
 #else // NO_NET_UUID_TRACING
 
@@ -227,42 +227,37 @@ net_uuid_tag_free(struct mtag_uuid *tag)
 		net_uuid_free_stamp_tag(&tag->tag);
 }
 
-char *
-net_uuid_get_uuid_str(char type, void *structure)
+struct uuid *
+net_uuid_get_uuid(char type, void *structure)
 {
 	switch (type) {
 		case 'T':
-			return net_uuid_get_uuid_str_tag(
+			return net_uuid_get_uuid_tag(
 					(struct mtag_uuid *)structure);
 		case 'M':
-			return net_uuid_get_uuid_str_mbuf(
+			return net_uuid_get_uuid_mbuf(
 					(struct mbuf *)structure);
 		default:
-			return net_uuid_get_uuid_str_tag(NULL);
+			return net_uuid_get_uuid_tag(NULL);
 	}
 }
-char *
-net_uuid_get_uuid_str_mbuf(struct mbuf *mbuf)
+struct uuid *
+net_uuid_get_uuid_mbuf(struct mbuf *mbuf)
 {
 	struct mtag_uuid *tag = net_uuid_tag_locate(mbuf);
-	return net_uuid_get_uuid_str_tag(tag);
+	return net_uuid_get_uuid_tag(tag);
 }
-char *
-net_uuid_get_uuid_str_tag(struct mtag_uuid *tag)
+struct uuid *
+net_uuid_get_uuid_tag(struct mtag_uuid *tag)
 {
-	if (tag != NULL)
-		return net_uuid_get_uuid_str_uuid(&tag->uuid);
+	struct uuid *uuid = NULL,
+		    *tmp = malloc(sizeof(struct uuid), M_TEMP, M_NOWAIT);
 
-	struct uuid n;
-	uuid_generate_nil(&n);
-	return net_uuid_get_uuid_str_uuid(&n);
-}
-char *
-net_uuid_get_uuid_str_uuid(struct uuid *uuid)
-{
-	char *buf = malloc(38, M_TEMP, M_NOWAIT);
-	snprintf_uuid(buf, 38, uuid);
-	return buf;
+	if (tag != NULL)
+		uuid = &tag->uuid;
+
+	net_uuid_copy(uuid, tmp);
+	return tmp;
 }
 
 struct mtag_uuid *

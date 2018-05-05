@@ -62,10 +62,13 @@ void	net_uuid_tag_move(struct mbuf *, struct mbuf *);
 struct mtag_uuid *
 	net_uuid_tag_clone(struct mbuf *mbuf); // caller free
 void	net_uuid_tag_free(struct mtag_uuid *); // accepts NULL
-char *	net_uuid_get_uuid_str(char, void *);
-char *	net_uuid_get_uuid_str_mbuf(struct mbuf *);
-char *	net_uuid_get_uuid_str_tag(struct mtag_uuid *);
-char *	net_uuid_get_uuid_str_uuid(struct uuid *);
+
+struct uuid *
+	net_uuid_get_uuid(char type, void *structure);
+struct uuid *
+	net_uuid_get_uuid_mbuf(struct mbuf *mbuf);
+struct uuid *
+	net_uuid_get_uuid_tag(struct mtag_uuid *tag);
 
 #endif /* _KERNEL */
 #endif /* _SYS_NET_UUID_H_ */

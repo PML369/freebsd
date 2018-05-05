@@ -42,55 +42,51 @@
 
 #define NET_UUID_PROBE_STR(mod, probe, t0, mt0)
 #define NET_UUID_PROBE_STR_W_ADDRS(mod, probe, t0, mt0)
+#define NET_UUID_PROBE2_STR_ADDRS(mod, probe, t0, mt0, m1)
 #define NET_UUID_PROBE2_STR(mod, probe, t0, mt0, arg1)
 #define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)
+#define NET_UUID_PROBE2_UUID_STR(mod, probe, uuid0, arg1)
+#define NET_UUID_PROBE2_STR_UUID_STR(mod, probe, t0, mt0, uuid1)
 
 #else // NO_NET_UUID_TRACING
 
 #define NET_UUID_PROBE_STR(mod, probe, t0, mt0)			do {	\
-	char *str = net_uuid_get_uuid_str(t0, mt0);			\
-	SDT_PROBE1(net_uuid, mod, , probe, str);			\
-	free(str, M_TEMP);						\
-} while (0)
-
-#define NET_UUID_PROBE_STR_W_ADDRS(mod, probe, t0, mt0)		do {	\
-	char *str = net_uuid_get_uuid_str(t0, mt0);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str, mt0);			\
-	free(str, M_TEMP);						\
+	struct uuid *id = net_uuid_get_uuid(t0, mt0);			\
+	SDT_PROBE1(net_uuid, mod, , probe, id);				\
+	free(id, M_TEMP);						\
 } while (0)
 
 #define NET_UUID_PROBE2_STR_ADDRS(mod, probe, t0, mt0, m1)	do {	\
-	char *str = net_uuid_get_uuid_str(t0, mt0);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str, m1);			\
-	free(str, M_TEMP);						\
+	struct uuid *id = net_uuid_get_uuid(t0, mt0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, id, m1);			\
+	free(id, M_TEMP);						\
 } while (0)
 
+#define NET_UUID_PROBE_STR_W_ADDRS(mod, probe, t0, mt0)			\
+	NET_UUID_PROBE2_STR_ADDRS(mod, probe, t0, mt0, mt0)
+
 #define NET_UUID_PROBE2_STR(mod, probe, t0, mt0, arg1)		do {	\
-	char *str = net_uuid_get_uuid_str(t0, mt0);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str, arg1);			\
-	free(str, M_TEMP);						\
+	struct uuid *id = net_uuid_get_uuid(t0, mt0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, id, arg1);			\
+	free(id, M_TEMP);						\
 } while (0)
 
 #define NET_UUID_PROBE2_UUID_STR(mod, probe, uuid0, arg1)	do {	\
-	char *str = net_uuid_get_uuid_str_uuid(uuid0);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str, arg1);			\
-	free(str, M_TEMP);						\
+	SDT_PROBE2(net_uuid, mod, , probe, uuid0, arg1);		\
 } while (0)
 
 #define NET_UUID_PROBE2_STR_UUID_STR(mod, probe, t0, mt0, uuid1) do {	\
-	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
-	char *str1 = net_uuid_get_uuid_str_uuid(uuid1);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str0, str1);			\
-	free(str0, M_TEMP);						\
-	free(str1, M_TEMP);						\
+	struct uuid *id = net_uuid_get_uuid(t0, mt0);			\
+	SDT_PROBE2(net_uuid, mod, , probe, id, uuid1);			\
+	free(id, M_TEMP);						\
 } while (0)
 
 #define NET_UUID_PROBE2_STR_STR(mod, probe, t0, mt0, t1, mt1)	do {	\
-	char *str0 = net_uuid_get_uuid_str(t0, mt0);			\
-	char *str1 = net_uuid_get_uuid_str(t1, mt1);			\
-	SDT_PROBE2(net_uuid, mod, , probe, str0, str1);			\
-	free(str0, M_TEMP);						\
-	free(str1, M_TEMP);						\
+	struct uuid *id0 = net_uuid_get_uuid(t0, mt0);			\
+	struct uuid *id1 = net_uuid_get_uuid(t1, mt1);			\
+	SDT_PROBE2(net_uuid, mod, , probe, id0, id1);			\
+	free(id0, M_TEMP);						\
+	free(id1, M_TEMP);						\
 } while (0)
 
 SDT_PROVIDER_DECLARE(net_uuid);
