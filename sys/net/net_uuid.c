@@ -87,7 +87,8 @@ static void
 net_uuid_generate(struct uuid *uuid)
 {
 	// Generate a v1 UUID for this packet
-	kern_uuidgen(uuid, 1);
+	if (uuid != NULL)
+		kern_uuidgen(uuid, 1);
 }
 
 static void
@@ -174,6 +175,9 @@ net_uuid_construct_stamp_tag()
 static struct mtag_uuid *
 net_uuid_tag_deep_copy(struct mtag_uuid *tag)
 {
+	if (tag == NULL)
+		return NULL;
+
 	struct mtag_uuid *copy = net_uuid_construct_stamp_tag();
 	net_uuid_copy(&tag->uuid, &copy->uuid);
 	if (tag->parent != NULL)
@@ -188,6 +192,8 @@ net_uuid_tag_deep_copy(struct mtag_uuid *tag)
 static inline struct mtag_uuid *
 net_uuid_tag_locate(struct mbuf *mbuf)
 {
+	if (mbuf == NULL)
+		return NULL;
 	return (struct mtag_uuid *)m_tag_locate(
 			mbuf,
 			MTAG_COOKIE_NET_UUID,
@@ -244,6 +250,8 @@ net_uuid_get_uuid_tag(struct mtag_uuid *tag)
 struct mtag_uuid *
 net_uuid_tag_packet(struct mbuf *packet)
 {
+	if (packet == NULL)
+		return NULL;
 	struct mtag_uuid *tag;
 
 	tag = net_uuid_tag_locate(packet);
@@ -294,14 +302,18 @@ net_uuid_tag_assembled_packet(struct mbuf *assembled, struct mbuf *constituent)
 	constituent_tag = net_uuid_tag_locate(constituent);
 	assembled_tag = net_uuid_tag_locate(assembled);
 
+	if (constituent_tag == NULL)
+		return;
+	if (assembled_tag == NULL) {
+		assembled_tag = net_uuid_tag_packet(assembled);
+	}
 	if (assembled_tag == constituent_tag) {
 		// Retag parent
 		m_tag_unlink(assembled, &assembled_tag->tag);
 		assembled_tag = NULL;
 	}
-	if (assembled_tag == NULL) {
-		assembled_tag = net_uuid_tag_packet(assembled);
-	}
+	if (assembled_tag == NULL)
+		return;
 
 	constituent_tag->sibling = assembled_tag->child;
 	assembled_tag->child = constituent_tag;
